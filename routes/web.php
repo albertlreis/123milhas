@@ -90,9 +90,12 @@ $router->get('/', function () use ($router) {
      * Criação dos grupos de voos
      */
     $nCodGroup = 1;
+    $vConsolidated = [];
     foreach ($vPrice as $sFare=>$vFare){
         foreach ($vFare["outbound"] as $nPriceOut=>$vOutbound) {
             foreach ($vFare["inbound"] as $nPriceIn=>$vInbound) {
+                $vConsolidated[] = ["id"=>$nCodGroup,"price"=>$nPriceOut+$nPriceIn];
+
                 $vReturn["groups"][$nCodGroup]["uniqueId"] = $nCodGroup;
                 $vReturn["groups"][$nCodGroup]["totalPrice"] = $nPriceOut+$nPriceIn;
 
@@ -135,10 +138,13 @@ $router->get('/', function () use ($router) {
         }
     }
 
+    $nMinValue = min(array_column($vConsolidated, 'price'));
+    $nMinId = array_search($nMinValue, array_column($vConsolidated, 'price'));
+
     $vReturn["totalGroups"] = $nCodGroup-1;
     $vReturn["totalFlights"] = count($vFlight);
-    $vReturn["cheapPrice"] = 0;
-    $vReturn["cheapestGroup"] = 0;
+    $vReturn["cheapPrice"] = $nMinValue;
+    $vReturn["cheapestGroup"] = $vConsolidated[$nMinId]["id"];
 
     /**
      * Resultado da criação dos grupos
